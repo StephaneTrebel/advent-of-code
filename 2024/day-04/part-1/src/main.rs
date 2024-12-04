@@ -58,112 +58,177 @@ enum Direction {
     SouthEast,
 }
 
-type Position = (usize, usize);
-
-fn find_xmas(input: &Input, position: &Position, direction: &Direction) -> bool {
-    let x = position.0;
-    let y = position.1;
-    match direction {
-        Direction::NorthWest => {
-            input
-                .get(x - 1)
-                .unwrap_or(&vec![])
-                .get(y - 1)
-                .unwrap_or(&' ')
-                == &'M'
-                && input
-                    .get(x - 2)
+fn find_xmas(input: &Input, position: (&usize, &usize), direction: &Direction) -> usize {
+    let x: isize = *position.0 as isize;
+    let y: isize = *position.1 as isize;
+    let found = {
+        match direction {
+            Direction::NorthWest => {
+                input
+                    .get((x - 1) as usize)
                     .unwrap_or(&vec![])
-                    .get(y - 2)
+                    .get((y - 1) as usize)
                     .unwrap_or(&' ')
-                    == &'A'
-                && input
-                    .get(x - 3)
+                    == &'M'
+                    && input
+                        .get((x - 2) as usize)
+                        .unwrap_or(&vec![])
+                        .get((y - 2) as usize)
+                        .unwrap_or(&' ')
+                        == &'A'
+                    && input
+                        .get((x - 3) as usize)
+                        .unwrap_or(&vec![])
+                        .get((y - 3) as usize)
+                        .unwrap_or(&' ')
+                        == &'S'
+            }
+            Direction::North => {
+                input
+                    .get(x as usize)
                     .unwrap_or(&vec![])
-                    .get(y - 3)
+                    .get((y - 1) as usize)
                     .unwrap_or(&' ')
-                    == &'S'
-        }
-        Direction::North => {
-            input.get(x).unwrap_or(&vec![]).get(y - 1).unwrap_or(&' ') == &'M'
-                && input.get(x).unwrap_or(&vec![]).get(y - 2).unwrap_or(&' ') == &'A'
-                && input.get(x).unwrap_or(&vec![]).get(y - 3).unwrap_or(&' ') == &'S'
-        }
-        Direction::NorthEast => {
-            input
-                .get(x + 1)
-                .unwrap_or(&vec![])
-                .get(y - 1)
-                .unwrap_or(&' ')
-                == &'M'
-                && input
-                    .get(x + 2)
+                    == &'M'
+                    && input
+                        .get(x as usize)
+                        .unwrap_or(&vec![])
+                        .get((y - 2) as usize)
+                        .unwrap_or(&' ')
+                        == &'A'
+                    && input
+                        .get(x as usize)
+                        .unwrap_or(&vec![])
+                        .get((y - 3) as usize)
+                        .unwrap_or(&' ')
+                        == &'S'
+            }
+            Direction::NorthEast => {
+                input
+                    .get((x + 1) as usize)
                     .unwrap_or(&vec![])
-                    .get(y - 2)
+                    .get((y - 1) as usize)
                     .unwrap_or(&' ')
-                    == &'A'
-                && input
-                    .get(x + 3)
+                    == &'M'
+                    && input
+                        .get((x + 2) as usize)
+                        .unwrap_or(&vec![])
+                        .get((y - 2) as usize)
+                        .unwrap_or(&' ')
+                        == &'A'
+                    && input
+                        .get((x + 3) as usize)
+                        .unwrap_or(&vec![])
+                        .get((y - 3) as usize)
+                        .unwrap_or(&' ')
+                        == &'S'
+            }
+            Direction::West => {
+                input
+                    .get((x - 1) as usize)
                     .unwrap_or(&vec![])
-                    .get(y - 3)
+                    .get(y as usize)
                     .unwrap_or(&' ')
-                    == &'S'
-        }
-        Direction::West => {
-            input.get(x - 1).unwrap_or(&vec![]).get(y).unwrap_or(&' ') == &'M'
-                && input.get(x - 2).unwrap_or(&vec![]).get(y).unwrap_or(&' ') == &'A'
-                && input.get(x - 3).unwrap_or(&vec![]).get(y).unwrap_or(&' ') == &'S'
-        }
-        Direction::East => {
-            input.get(x + 1).unwrap_or(&vec![]).get(y).unwrap_or(&' ') == &'M'
-                && input.get(x + 2).unwrap_or(&vec![]).get(y).unwrap_or(&' ') == &'A'
-                && input.get(x + 3).unwrap_or(&vec![]).get(y).unwrap_or(&' ') == &'S'
-        }
-        Direction::SouthWest => {
-            input
-                .get(x - 1)
-                .unwrap_or(&vec![])
-                .get(y + 1)
-                .unwrap_or(&' ')
-                == &'M'
-                && input
-                    .get(x - 2)
+                    == &'M'
+                    && input
+                        .get((x - 2) as usize)
+                        .unwrap_or(&vec![])
+                        .get(y as usize)
+                        .unwrap_or(&' ')
+                        == &'A'
+                    && input
+                        .get((x - 3) as usize)
+                        .unwrap_or(&vec![])
+                        .get(y as usize)
+                        .unwrap_or(&' ')
+                        == &'S'
+            }
+            Direction::East => {
+                input
+                    .get((x + 1) as usize)
                     .unwrap_or(&vec![])
-                    .get(y + 2)
+                    .get(y as usize)
                     .unwrap_or(&' ')
-                    == &'A'
-                && input
-                    .get(x - 3)
+                    == &'M'
+                    && input
+                        .get((x + 2) as usize)
+                        .unwrap_or(&vec![])
+                        .get(y as usize)
+                        .unwrap_or(&' ')
+                        == &'A'
+                    && input
+                        .get((x + 3) as usize)
+                        .unwrap_or(&vec![])
+                        .get(y as usize)
+                        .unwrap_or(&' ')
+                        == &'S'
+            }
+            Direction::SouthWest => {
+                input
+                    .get((x - 1) as usize)
                     .unwrap_or(&vec![])
-                    .get(y + 3)
+                    .get((y + 1) as usize)
                     .unwrap_or(&' ')
-                    == &'S'
-        }
-        Direction::South => {
-            input.get(x).unwrap_or(&vec![]).get(y + 1).unwrap_or(&' ') == &'M'
-                && input.get(x).unwrap_or(&vec![]).get(y + 2).unwrap_or(&' ') == &'A'
-                && input.get(x).unwrap_or(&vec![]).get(y + 3).unwrap_or(&' ') == &'S'
-        }
-        Direction::SouthEast => {
-            input
-                .get(x + 1)
-                .unwrap_or(&vec![])
-                .get(y + 1)
-                .unwrap_or(&' ')
-                == &'M'
-                && input
-                    .get(x + 2)
+                    == &'M'
+                    && input
+                        .get((x - 2) as usize)
+                        .unwrap_or(&vec![])
+                        .get((y + 2) as usize)
+                        .unwrap_or(&' ')
+                        == &'A'
+                    && input
+                        .get((x - 3) as usize)
+                        .unwrap_or(&vec![])
+                        .get((y + 3) as usize)
+                        .unwrap_or(&' ')
+                        == &'S'
+            }
+            Direction::South => {
+                input
+                    .get(x as usize)
                     .unwrap_or(&vec![])
-                    .get(y + 2)
+                    .get((y + 1) as usize)
                     .unwrap_or(&' ')
-                    == &'A'
-                && input
-                    .get(x + 3)
+                    == &'M'
+                    && input
+                        .get(x as usize)
+                        .unwrap_or(&vec![])
+                        .get((y + 2) as usize)
+                        .unwrap_or(&' ')
+                        == &'A'
+                    && input
+                        .get(x as usize)
+                        .unwrap_or(&vec![])
+                        .get((y + 3) as usize)
+                        .unwrap_or(&' ')
+                        == &'S'
+            }
+            Direction::SouthEast => {
+                input
+                    .get((x + 1) as usize)
                     .unwrap_or(&vec![])
-                    .get(y + 3)
+                    .get((y + 1) as usize)
                     .unwrap_or(&' ')
-                    == &'S'
+                    == &'M'
+                    && input
+                        .get((x + 2) as usize)
+                        .unwrap_or(&vec![])
+                        .get((y + 2) as usize)
+                        .unwrap_or(&' ')
+                        == &'A'
+                    && input
+                        .get((x + 3) as usize)
+                        .unwrap_or(&vec![])
+                        .get((y + 3) as usize)
+                        .unwrap_or(&' ')
+                        == &'S'
+            }
         }
+    };
+    if found {
+        1
+    } else {
+        0
     }
 }
 
@@ -184,26 +249,54 @@ SAMXMAS
 S00S00S
 ",
         );
-        assert!(find_xmas(&content.input, &(3, 3), &Direction::NorthWest));
-        assert!(find_xmas(&content.input, &(3, 3), &Direction::North));
-        assert!(find_xmas(&content.input, &(3, 3), &Direction::NorthEast));
-        assert!(find_xmas(&content.input, &(3, 3), &Direction::West));
-        assert!(find_xmas(&content.input, &(3, 3), &Direction::East));
-        assert!(find_xmas(&content.input, &(3, 3), &Direction::SouthWest));
-        assert!(find_xmas(&content.input, &(3, 3), &Direction::South));
-        assert!(find_xmas(&content.input, &(3, 3), &Direction::SouthEast));
+        assert_eq!(
+            find_xmas(&content.input, (&3, &3), &Direction::NorthWest),
+            1
+        );
+        assert_eq!(find_xmas(&content.input, (&3, &3), &Direction::North), 1);
+        assert_eq!(
+            find_xmas(&content.input, (&3, &3), &Direction::NorthEast),
+            1
+        );
+        assert_eq!(find_xmas(&content.input, (&3, &3), &Direction::West), 1);
+        assert_eq!(find_xmas(&content.input, (&3, &3), &Direction::East), 1);
+        assert_eq!(
+            find_xmas(&content.input, (&3, &3), &Direction::SouthWest),
+            1
+        );
+        assert_eq!(find_xmas(&content.input, (&3, &3), &Direction::South), 1);
+        assert_eq!(
+            find_xmas(&content.input, (&3, &3), &Direction::SouthEast),
+            1
+        );
+        // Out of bounds test
+        assert_eq!(
+            find_xmas(&content.input, (&0, &0), &Direction::NorthWest),
+            0
+        );
     }
 }
 
-fn fold(content: &Content) -> i32 {
+fn fold(content: &Content) -> usize {
     content
         .input
         .iter()
         .enumerate()
         .flat_map(|(x, row)| {
-            row.iter()
-                .enumerate()
-                .map(|(y, c)| if c == &'X' { 1 } else { 0 })
+            row.iter().enumerate().map(move |(y, c)| {
+                if c == &'X' {
+                    find_xmas(&content.input, (&x, &y), &Direction::NorthWest)
+                        + find_xmas(&content.input, (&x, &y), &Direction::North)
+                        + find_xmas(&content.input, (&x, &y), &Direction::NorthEast)
+                        + find_xmas(&content.input, (&x, &y), &Direction::West)
+                        + find_xmas(&content.input, (&x, &y), &Direction::East)
+                        + find_xmas(&content.input, (&x, &y), &Direction::SouthWest)
+                        + find_xmas(&content.input, (&x, &y), &Direction::South)
+                        + find_xmas(&content.input, (&x, &y), &Direction::SouthEast)
+                } else {
+                    0
+                }
+            })
         })
         .sum()
 }
