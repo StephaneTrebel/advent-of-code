@@ -230,7 +230,7 @@ EEEC
 }
 
 #[derive(Debug, PartialEq, Clone)]
-struct Region(HashSet<Coords>);
+pub struct Region(pub HashSet<Coords>);
 
 impl Region {
     fn new() -> Region {
@@ -246,6 +246,10 @@ impl Region {
         self.0.is_empty()
     }
 
+    pub fn contains(&self, coords: &(isize, isize)) -> bool {
+        self.0.contains(coords)
+    }
+
     fn insert(&mut self, coords: (isize, isize)) -> bool {
         self.0.insert(coords)
     }
@@ -254,7 +258,7 @@ impl Region {
         self.0.len()
     }
 
-    fn get_bounding_rect(&self) -> ((isize, isize), (isize, isize)) {
+    pub fn get_bounding_rect(&self) -> ((isize, isize), (isize, isize)) {
         let mut min_x = isize::MAX;
         let mut min_y = isize::MAX;
         let mut max_x = 0;
@@ -279,7 +283,7 @@ impl Region {
     }
 }
 
-fn get_regions(map: &Map) -> Vec<Region> {
+pub fn get_regions(map: &Map) -> Vec<Region> {
     let (max_x, max_y) = map.get_bounding_rect();
     let mut regions: Vec<Region> = vec![];
 
