@@ -142,7 +142,7 @@ EEEC
 /// .........
 /// .E.E.E.C.
 /// .........
-fn get_exploded_map(map: &Map) -> Map {
+pub fn get_exploded_map(map: &Map) -> Map {
     let (max_x, max_y) = map.get_bounding_rect();
     let mut exploded_map = Map::new();
 
@@ -159,7 +159,7 @@ fn get_exploded_map(map: &Map) -> Map {
 }
 
 /// Same as get_exploded_map, but for a region
-fn get_exploded_region(region: &Region) -> Region {
+pub fn get_exploded_region(region: &Region) -> Region {
     let mut exploded_region = Region::new();
 
     for (x, y) in region.0.clone() {
@@ -425,7 +425,7 @@ MMMISSJEEE
     }
 }
 
-fn get_area(region: &Region) -> usize {
+pub fn get_area(region: &Region) -> usize {
     region.len()
 }
 
@@ -468,6 +468,96 @@ OOOOO
         assert_eq!(get_area(&regions[2]), 1);
         assert_eq!(get_area(&regions[3]), 1);
         assert_eq!(get_area(&regions[4]), 1);
+    }
+}
+
+pub fn get_perimeter(map: &Map, region: &Region) -> usize {
+    let mut perimeter = 0;
+    let first_element = region.0.clone().into_iter().next().expect("Empty Set");
+    let region_plant = map.get(&first_element).expect("Region should not be empty");
+    for (x, y) in region.0.clone() {
+        let neighbours = [(x, y - 1), (x - 1, y), (x + 1, y), (x, y + 1)];
+        let mut current_perimeter = 4;
+
+        neighbours
+            .iter()
+            .filter_map(|neighbour| map.get(neighbour))
+            .for_each(|plant| {
+                if plant == region_plant {
+                    current_perimeter -= 1;
+                }
+            });
+        perimeter += current_perimeter;
+    }
+
+    perimeter
+}
+
+#[cfg(test)]
+mod tests_get_perimeter {
+    use super::*;
+
+    #[test]
+    fn get_perimeter_solo() {
+        let map = Map::from(
+            "\
+D
+",
+        );
+        let regions = get_regions(&map);
+
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[0]), 4);
+    }
+
+    #[test]
+    fn get_perimeter_duo() {
+        let map = Map::from(
+            "\
+DD
+",
+        );
+        let regions = get_regions(&map);
+
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[0]), 6);
+    }
+
+    #[test]
+    fn get_perimeter_not_so_simple() {
+        let map = Map::from(
+            "\
+AAAA
+BBCD
+BBCC
+EEEC
+",
+        );
+        let regions = get_regions(&map);
+
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[0]), 10);
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[1]), 8);
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[2]), 10);
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[3]), 4);
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[4]), 8);
+    }
+
+    #[test]
+    fn get_perimeter_intertwined() {
+        let map = Map::from(
+            "\
+OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO
+",
+        );
+        let regions = get_regions(&map);
+
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[0]), 36);
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[1]), 4);
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[2]), 4);
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[3]), 4);
+        pretty_assertions::assert_eq!(get_perimeter(&map, &regions[4]), 4);
     }
 }
 
@@ -622,7 +712,7 @@ enum InOut {
 ///  will return four sides (top, left, right, and bottom).
 ///
 ///  A "side" can have any number of fences, but must be contiguous, and straight
-fn get_sides(exploded_map: &Map, exploded_region: &Region) -> usize {
+pub fn get_sides(exploded_map: &Map, exploded_region: &Region) -> usize {
     let fences = get_fences(exploded_map, exploded_region);
     let region_plant = exploded_map
         .get(exploded_region.0.iter().next().expect("Empty region"))
@@ -871,7 +961,7 @@ AAAAAA
     }
 }
 
-fn calc_fence_price(exploded_map: &Map, exploded_region: &Region) -> usize {
+pub fn calc_fence_price(exploded_map: &Map, exploded_region: &Region) -> usize {
     get_area(exploded_region) * get_sides(exploded_map, exploded_region)
 }
 
@@ -1043,7 +1133,81 @@ OOOOO
     }
 }
 
-fn fold(map: &Map) -> usize {
+pub fn fold_part1(map: &Map) -> usize {
+    get_regions(map)
+        .iter()
+        .map(|region| get_area(region) * get_perimeter(map, region))
+        .sum()
+}
+
+#[cfg(test)]
+mod tests_fold_part1 {
+    use super::*;
+
+    #[test]
+    fn fold_part1_duo() {
+        let map = Map::from(
+            "\
+    DD
+    ",
+        );
+        pretty_assertions::assert_eq!(fold_part1(&map), 12);
+    }
+
+    #[test]
+    fn fold_part1_not_so_simple() {
+        let map = Map::from(
+            "\
+    AAAA
+    BBCD
+    BBCC
+    EEEC
+    ",
+        );
+        pretty_assertions::assert_eq!(fold_part1(&map), 140);
+    }
+
+    #[test]
+    fn fold_part1_intertwined() {
+        let map = Map::from(
+            "\
+    OOOOO
+    OXOXO
+    OOOOO
+    OXOXO
+    OOOOO
+    ",
+        );
+        pretty_assertions::assert_eq!(fold_part1(&map), 772);
+    }
+
+    #[test]
+    fn fold_part1_big() {
+        let map = Map::from(
+            "\
+RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE
+",
+        );
+        pretty_assertions::assert_eq!(fold_part1(&map), 1930);
+    }
+    #[test]
+
+    fn fold_part1_final() {
+        let map = Map::from(get_file_content("assets/input").as_str());
+        assert_eq!(fold_part1(&map), 1396298);
+    }
+}
+
+pub fn fold_part2(map: &Map) -> usize {
     let exploded_map = get_exploded_map(map);
     get_regions(map)
         .iter()
@@ -1055,7 +1219,7 @@ fn fold(map: &Map) -> usize {
 }
 
 #[cfg(test)]
-mod tests_fold {
+mod tests_fold_part2 {
     use super::*;
 
     #[test]
@@ -1065,7 +1229,7 @@ mod tests_fold {
 DD
 ",
         );
-        assert_eq!(fold(&map), 8);
+        assert_eq!(fold_part2(&map), 8);
     }
 
     #[test]
@@ -1078,7 +1242,7 @@ BBCC
 EEEC
 ",
         );
-        assert_eq!(fold(&map), 80);
+        assert_eq!(fold_part2(&map), 80);
     }
 
     #[test]
@@ -1092,7 +1256,7 @@ OXOXO
 OOOOO
 ",
         );
-        assert_eq!(fold(&map), 436);
+        assert_eq!(fold_part2(&map), 436);
     }
 
     #[test]
@@ -1111,7 +1275,7 @@ MIIISIJEEE
 MMMISSJEEE
 ",
         );
-        assert_eq!(fold(&map), 1206);
+        assert_eq!(fold_part2(&map), 1206);
     }
 
     #[test]
@@ -1125,7 +1289,7 @@ EXXXX
 EEEEE
 ",
         );
-        assert_eq!(fold(&map), 236);
+        assert_eq!(fold_part2(&map), 236);
     }
 
     #[test]
@@ -1140,13 +1304,13 @@ ABBAAA
 AAAAAA
 ",
         );
-        assert_eq!(fold(&map), 368);
+        assert_eq!(fold_part2(&map), 368);
     }
 
     #[test]
     fn fold_final() {
         let map = Map::from(get_file_content("assets/input").as_str());
-        assert_eq!(fold(&map), 853588);
+        assert_eq!(fold_part2(&map), 853588);
     }
 }
 
