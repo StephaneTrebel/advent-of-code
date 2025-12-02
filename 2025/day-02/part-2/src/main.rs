@@ -54,7 +54,7 @@ fn get_invalid_ids(first_id: usize, last_id: usize) -> Vec<usize> {
         let len_i = i_str.len();
 
         for step in (1..=len_i).rev() {
-            if len_i % step == 0 {
+            if len_i.is_multiple_of(step) {
                 let values: Vec<&[u8]> = i_str.as_bytes().chunks(step).collect();
                 if values.len() <= 1 {
                     continue;
@@ -66,7 +66,6 @@ fn get_invalid_ids(first_id: usize, last_id: usize) -> Vec<usize> {
             }
         }
     }
-
     invalid_ids
 }
 
