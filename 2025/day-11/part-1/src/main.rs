@@ -12,24 +12,13 @@ fn get_file_content(file_path: &str) -> String {
     fs::read_to_string(file_path).expect("Cannot load file")
 }
 
-#[derive(PartialEq, Eq, Debug, Clone)]
-struct Graph<'a>(Rc<RefCell<Node<'a>>>);
-
-impl<'a> Deref for Graph<'a> {
-    type Target = Rc<RefCell<Node<'a>>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct Node<'a> {
     name: &'a str,
     edges: Vec<Graph<'a>>,
 }
 
-impl<'a> std::fmt::Display for Node<'a> {
+impl std::fmt::Display for Node<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -43,7 +32,18 @@ impl<'a> std::fmt::Display for Node<'a> {
     }
 }
 
-impl<'a> std::fmt::Display for Graph<'a> {
+#[derive(PartialEq, Eq, Debug, Clone)]
+struct Graph<'a>(Rc<RefCell<Node<'a>>>);
+
+impl<'a> Deref for Graph<'a> {
+    type Target = Rc<RefCell<Node<'a>>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for Graph<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.borrow())
     }
@@ -54,10 +54,10 @@ fn parse_content<'a>(content: &'a str) -> Graph<'a> {
 
     // First pass: Create node names map (their relationship on a 'string' level)
     for line in content.lines() {
-        println!("line: {line}");
+        // println!("line: {line}");
         let mut split = line.split(": ");
         let name = split.next().expect("Name should exist");
-        println!("name: {name}");
+        // println!("name: {name}");
         let neighbours_names: Vec<&str> = split
             .next()
             .expect("neighbours should exist")
@@ -65,7 +65,7 @@ fn parse_content<'a>(content: &'a str) -> Graph<'a> {
             .collect();
         node_relations_map.insert(name, neighbours_names.clone());
     }
-    println!("node_relations_map: {node_relations_map:?}");
+    // println!("node_relations_map: {node_relations_map:?}");
 
     // Second pass: Assemble Graph, starting from "you" node
     let you = Graph(Rc::new(RefCell::new(Node {
@@ -79,7 +79,7 @@ fn parse_content<'a>(content: &'a str) -> Graph<'a> {
     let mut queue = VecDeque::new();
     queue.push_front("you".as_ref());
     while let Some(node_name) = queue.pop_back() {
-        println!("Handling node name {node_name}");
+        // println!("Handling node name {node_name}");
 
         let node = node_map.get(node_name).expect("Node must exist").to_owned();
 
@@ -88,12 +88,12 @@ fn parse_content<'a>(content: &'a str) -> Graph<'a> {
             .expect("Node must have relationships");
 
         for &neighbour_name in neighbours_names {
-            println!("Handling edge {neighbour_name}");
+            // println!("Handling edge {neighbour_name}");
             let neighbour_node = if let Some(n) = node_map.get(neighbour_name) {
-                println!("Existing node {n}");
+                // println!("Existing node {n}");
                 n.to_owned()
             } else {
-                println!("New node !");
+                // println!("New node !");
                 let new_node = Graph(Rc::new(RefCell::new(Node {
                     name: neighbour_name,
                     edges: vec![],
@@ -199,26 +199,49 @@ out:
     }
 }
 
-fn fold(_graph: &Graph) -> usize {
-    // graph.iter().map(Machine::decompose).sum()
-    0
+fn fold(top_node: Graph) -> usize {
+    let mut queue: VecDeque<Graph> = VecDeque::new();
+    queue.push_front(top_node);
+
+    let mut count = 0;
+    while let Some(graph) = queue.pop_back() {
+        let borrow = graph.borrow();
+        if borrow.name == "out" {
+            count += 1;
+        }
+        for neighbour in borrow.edges.clone() {
+            let binding = neighbour.clone();
+            queue.push_front(binding);
+        }
+    }
+
+    count
 }
 
 #[cfg(test)]
 mod tests_fold {
-    // use super::*;
+    use super::*;
 
-    // #[test]
-    // fn fold_sample() {
-    // let graph = parse_content(
-    // "\
-    // [.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
-    // [...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
-    // [.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}
-    // ",
-    // );
-    // assert_eq!(fold(&graph), 7);
-    // }
+    #[test]
+    fn fold_sample() {
+        let graph = parse_content(
+            "\
+aaa: you hhh
+you: bbb ccc
+bbb: ddd eee
+ccc: ddd eee fff
+ddd: ggg
+eee: out
+fff: out
+ggg: out
+hhh: ccc fff iii
+iii: out
+out: 
+",
+        );
+
+        assert_eq!(fold(graph), 5);
+    }
 
     // #[test]
     // fn fold_final() {
@@ -231,5 +254,5 @@ mod tests_fold {
 fn main() {
     let file_content = get_file_content("assets/input");
     let graph = parse_content(&file_content);
-    println!("Result: {}", fold(&graph));
+    println!("Result: {}", fold(graph));
 }
