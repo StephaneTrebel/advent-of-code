@@ -242,12 +242,6 @@ out:
 
         assert_eq!(fold(graph), 5);
     }
-
-    // #[test]
-    // fn fold_final() {
-    // let graph = parse_content(&get_file_content("assets/input"));
-    // assert_eq!(fold(&graph), 438);
-    // }
 }
 
 #[allow(clippy::items_after_test_module)]
