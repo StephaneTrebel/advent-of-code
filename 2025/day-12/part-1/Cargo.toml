@@ -1,0 +1,11 @@
+[package]
+name = "aoc2025"
+version = "0.1.0"
+edition = "2024"
+
+[lints.clippy]
+pedantic = "warn"
+all = "warn"
+
+[dependencies]
+log = "0.4.28"
